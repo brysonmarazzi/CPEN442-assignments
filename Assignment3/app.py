@@ -69,10 +69,12 @@ class Assignment3VPN:
     # Handle client mode selection
     def ClientModeSelected(self):
         self.hostName.set("localhost")
+        self.prtcl.SetMode("Alice")
 
 
     # Handle sever mode selection
     def ServerModeSelected(self):
+        self.prtcl.SetMode("Bob")
         pass
 
 
@@ -151,11 +153,16 @@ class Assignment3VPN:
                 # Checking if the received message is part of your protocol
                 # TODO: MODIFY THE INPUT ARGUMENTS AND LOGIC IF NECESSARY
                 if self.prtcl.IsMessagePartOfProtocol(cipher_text):
+                    
                     # Disabling the button to prevent repeated clicks
                     self.secureButton["state"] = "disabled"
+                    
                     # Processing the protocol message
-                    self.prtcl.ProcessReceivedProtocolMessage(cipher_text)
+                    response = self.prtcl.ProcessReceivedProtocolMessage(cipher_text)
+                    self.prtcl.IncrementState()
 
+                    if(response != None or len(response) != 0):
+                        self._SendMessage(response)
                 # Otherwise, decrypting and showing the messaage
                 else:
                     plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
@@ -177,7 +184,7 @@ class Assignment3VPN:
     def SecureConnection(self):
         # disable the button to prevent repeated clicks
         self.secureButton["state"] = "disabled"
-
+        
         # TODO: THIS IS WHERE YOU SHOULD IMPLEMENT THE START OF YOUR MUTUAL AUTHENTICATION AND KEY ESTABLISHMENT PROTOCOL, MODIFY AS YOU SEEM FIT
         init_message = self.prtcl.GetProtocolInitiationMessage()
         self._SendMessage(init_message)

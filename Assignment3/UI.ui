@@ -196,6 +196,21 @@
                 </layout>
               </object>
             </child>
+            <!-- <child>
+              <object class="ttk.Button" id="resetButton">
+                <property name="command" type="command" cbtype="simple">ResetState</property>
+                <property name="state">disabled</property>
+                <property name="text" translatable="yes">Reset State</property>
+                <property name="width">31</property>
+                <layout manager="grid">
+                  <property name="column">0</property>
+                  <property name="padx">5</property>
+                  <property name="pady">5</property>
+                  <property name="propagate">True</property>
+                  <property name="row">2</property>
+                </layout>
+              </object>
+            </child> -->
           </object>
         </child>
       </object>
