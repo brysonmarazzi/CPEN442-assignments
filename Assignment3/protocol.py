@@ -120,12 +120,11 @@ class Protocol:
     # Decrypting and verifying messages
     # TODO: IMPLEMENT DECRYPTION AND INTEGRITY CHECK WITH THE SESSION KEY
     # RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
-    def DecryptAndVerifyMessage(self, cipher_text, authenticated, sharedKey=False):
-        if(authenticated):
-            if(sharedKey):
-                plain_text = self.aesCipherSharedKey.decrypt(cipher_text)    
-            else:
-                plain_text = self.aesCipherSessionKey.decrypt(cipher_text)
+    def DecryptAndVerifyMessage(self, cipher_text, authenticated=False, sharedKey=False):
+        if(sharedKey):
+            plain_text = self.aesCipherSharedKey.decrypt(cipher_text)    
+        elif(authenticated):
+            plain_text = self.aesCipherSessionKey.decrypt(cipher_text)
         else:
             plain_text = cipher_text
         return plain_text
