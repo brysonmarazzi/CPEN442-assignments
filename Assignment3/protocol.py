@@ -1,5 +1,6 @@
 import hashlib
 import secrets
+from aes import AESCipher
 
 #define 
 stateZero = 0
@@ -11,7 +12,7 @@ class Protocol:
     # Initializer (Called from app.py)
     # TODO: MODIFY ARGUMENTS AND LOGIC AS YOU SEEM FIT
 
-    def __init__(self):
+    def __init__(self, sharedSecret):
         self._key = None
         self.identifier = None
         self.protocolState = 0
@@ -20,6 +21,9 @@ class Protocol:
         self.r = None
         self.g = None
         self.p = None
+        self.sharedSecret = sharedSecret
+        self.aesCipherSharedKey = AESCipher(sharedSecret) # Shared secret is hashed inside AESCipher constructor
+        self.aesCipherSessionKey = None
         self.mydh = None
         self.theirdh = None
         self.commonDH = None
@@ -55,12 +59,12 @@ class Protocol:
     def ProcessReceivedProtocolMessage(self, message):
         if(message[0] == 0):
             self.rSender = message[16:]
-            self.r = self.nonce = secrets.token_urlsafe(16)
+            self.r = secrets.token_urlsafe(16)
             self.g = 11111111
             self.p = 22222222
             self.mydh = 33333333
             self.protocolState = 1
-            message = self.protocolState.to_bytes(1,"big") + \
+            response = self.protocolState.to_bytes(1,"big") + \
                 self.r.to_bytes(8,"big") +\
                 self.EncryptAndProtectMessage(\
                     self.rSender.to_bytes(8,"big") +\
@@ -69,7 +73,7 @@ class Protocol:
                 self.g.to_bytes(8,"big") +\
                 self.p.to_bytes(8,"big")
                 
-            return message
+            return response
 
         elif(message[0] == 1):
             self.rSender = message[1:18]
@@ -84,9 +88,10 @@ class Protocol:
             self.theirdh = 33333333 #decryptedMessage[51:60]
             self.mydh = 55555555
             self.commonDH = 88888888
+            self.aesCipherSessionKey = AESCipher(self.commonDH)
             return self.EncryptAndProtectMessage(self.rSender.to_bytes(8,"big") + self.mydh.to_bytes(8,"big"), False)
-        
         else:
+            # process the message and send a greeting message
             return "HELOOOOO"
 
 
@@ -115,8 +120,14 @@ class Protocol:
     # Decrypting and verifying messages
     # TODO: IMPLEMENT DECRYPTION AND INTEGRITY CHECK WITH THE SESSION KEY
     # RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
-    def DecryptAndVerifyMessage(self, cipher_text):
-        plain_text = cipher_text
+    def DecryptAndVerifyMessage(self, cipher_text, authenticated, sharedKey=False):
+        if(authenticated):
+            if(sharedKey):
+                plain_text = self.aesCipherSharedKey.decrypt(cipher_text)    
+            else:
+                plain_text = self.aesCipherSessionKey.decrypt(cipher_text)
+        else:
+            plain_text = cipher_text
         return plain_text
 
     # For Changing the mode of the protocol

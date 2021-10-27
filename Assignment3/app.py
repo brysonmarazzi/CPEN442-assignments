@@ -51,7 +51,7 @@ class Assignment3VPN:
         self.receive_thread = Thread(target=self._ReceiveMessages, daemon=True)
         
         # Creating a protocol object
-        self.prtcl = Protocol()
+        self.prtcl = Protocol(self.sharedSecret)
      
     # Distructor     
     def __del__(self):
@@ -75,7 +75,6 @@ class Assignment3VPN:
     # Handle sever mode selection
     def ServerModeSelected(self):
         self.prtcl.SetMode("Bob")
-        pass
 
 
     # Create a TCP connection between the client and the server
@@ -165,7 +164,8 @@ class Assignment3VPN:
                         self._SendMessage(response)
                 # Otherwise, decrypting and showing the messaage
                 else:
-                    plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
+                    autenticated = True # Change this for an authentication check
+                    plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text, authenticated)
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
             except Exception as e:
