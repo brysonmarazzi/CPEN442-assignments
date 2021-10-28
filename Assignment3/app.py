@@ -79,6 +79,7 @@ class Assignment3VPN:
     # Create a TCP connection between the client and the server
     def CreateConnection(self):
         # Change button states
+        self.prtcl.GetProtocolInitiationMessage()
         self._ChangeConnectionMode()
         
         # Create connection

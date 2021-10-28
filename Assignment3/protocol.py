@@ -16,7 +16,7 @@ class Protocol:
         self.SECURE_PREPEND = 1
         self.NOT_SECURE_PREPEND = 0
         self._key = None
-        self.identifier = 999# TODO make unique identifier should be 15 bytes
+        self.identifier = 999 # TODO make unique identifier should be 15 bytes
         self.protocolState = 0
         self.nonce = None
         self.rSender = None
@@ -33,12 +33,9 @@ class Protocol:
     # TODO: IMPLEMENT THE LOGIC (MODIFY THE INPUT ARGUMENTS AS YOU SEEM FIT)
     def GetProtocolInitiationMessage(self):
         self.nonce = secrets.token_urlsafe(16)
-        # print(self.nonce)
-        # print(self.identifier)
-        # print(self.nonce + self.identifier)
-        print(type())
         self.protocolState = 1
-        return self.SECURE_PREPEND.to_bytes(1, "big") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big")
+        print(self.SECURE_PREPEND.to_bytes(1, "little") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big"))
+        return self.SECURE_PREPEND.to_bytes(1, "little") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big")
 
 
     # ==============================================================================
