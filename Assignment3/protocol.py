@@ -1,5 +1,6 @@
 from os import curdir
 import secrets
+from threading import RLock
 from tkinter.constants import W
 
 # STATES
@@ -18,10 +19,9 @@ class Protocol:
     # Initializer (Called from app.py)
     # TODO: MODIFY ARGUMENTS AND LOGIC AS YOU SEEM FIT
     def __init__(self, sharedKey):
-        self._key = None
-        self.identifier = 999 # TODO make unique identifier should be 15 bytes
-        self.RIdentifier = None
-        self.protocolState = 0
+        self._key = sharedKey
+        self.identifier = self.intToBytes(999) # TODO make unique identifier should be 15 bytes
+        self.rIdentifier = None 
         self.nonce = None
         self.rSender = None
         self.r = None
@@ -29,20 +29,15 @@ class Protocol:
         self.p = None
         self.mydh = None
         self.theirdh = None
-        self.commonDH = None
         self.currentState = DEFAULT
         self.authenticate = False
-        self.sharedKey = sharedKey
 
     # Creating the initial message of your protocol (to be send to the other party to bootstrap the protocol)
     # TODO: IMPLEMENT THE LOGIC (MODIFY THE INPUT ARGUMENTS AS YOU SEEM FIT)
     def GetProtocolInitiationMessage(self):
-        # print(self.nonce)
-        # print(self.identifier)
-        # print(self.nonce + self.identifier)
-        self.nonce = secrets.token_urlsafe(16)
+        self.nonce = self.stringToBytes(secrets.token_urlsafe(16))
         self.currentState = AZERO
-        byteMsg = self.stringToBytes(self.nonce) + self.intToBytes(self.identifier)
+        byteMsg = self.nonce + self.identifier
         return self.prependSecure(byteMsg)
 
 
@@ -65,106 +60,111 @@ class Protocol:
         return bytes(str, 'utf-16')  # TODO str.encode()
 
     def intToBytes(self, num):
-        return num.to_bytes(16, "big")
-
-    # Processing protocol message
-    # TODO: IMPLMENET THE LOGIC (CALL SetSessionKey ONCE YOU HAVE THE KEY ESTABLISHED)
-    # THROW EXCEPTION IF AUTHENTICATION FAILS
+        return num.to_bytes(R_LENGTH, "big")
 
     #=================================================================================
     # Check the current state by referencing global variables that indicate the 
     # current state of this session. 
+    # TODO THROW EXCEPTION IF AUTHENTICATION FAILS
     #=================================================================================
     def ProcessReceivedProtocolMessage(self, message):
         if self.currentState == DEFAULT:
             print("Enter Default")
-            self.RIdentifier = message[0:15]
-            self.rSender = message[16:31]
-            # TODO process Ra and indentifier
-            # TODO create msg to send
+            self.rIdentifier = message[0:R_LENGTH-1] # TODO should we use this value?
+            self.rSender = message[R_LENGTH:R_LENGTH*2-1]
+
+            # Build response
+            self.mydh = self.getPublicDH()
+            messageToEncrypt = self.rSender + self.nonce + self.mydh
+            response = self.nonce + self.encryptProtocolMsg(messageToEncrypt)
             self.currentState = BZERO
-            messageToEncrypt = self.rSender + self.nonce
-
-            response = self.nonce + messageToEncrypt
-            
-
-
-            responseInBytes = self.stringToBytes('fakeresponseDefault')
-            # return response
-            return self.prependSecure(responseInBytes)
+            return self.prependSecure(response)
         if self.currentState == AZERO:
             print("Enter Azero")
-            # TODO process variables inside message Ra Rb gpmodp, g, p
-            # TODO send response with rb and gpmod kab
-            self.rSender = message[0:15]
-            gmodp = self.getPublicDH()
-            response = self.rSender + self.intToBytes(gmodp)
- 
+            # Decrypt and process
+            self.rSender = message[0:R_LENGTH - 1]
+            plainMsg = self.decryptProtocolMsg(message[R_LENGTH:])
+            # Verify Ra is correct 
+            if plainMsg[0:R_LENGTH - 1] != self.nonce:
+                print("FAILED Ra does not have right value")
+                return "Fail"
+            # Verify Rb is correct 
+            if plainMsg[R_LENGTH:R_LENGTH*2-1] != self.rSender:
+                print("FAILED Rb does not have right value")
+                return "Fail"
+            self.theirdh = plainMsg[R_LENGTH*2:]
 
-            # self.
-            # self.g = 11111111
-            # self.p = 22222222
-            # self.mydh = 33333333
-            # self.protocolState = 1
-            # message = self.protocolState.to_bytes(1,"big") + \
-            #     self.r.to_bytes(8,"big") +\
-            #     self.EncryptAndProtectMessage(\
-            #         self.rSender.to_bytes(8,"big") +\
-            #         self.r.to_bytes(8,"big") +\
-            #         self.dh.to_bytes(8,"big"), False) +\
-            #     self.g.to_bytes(8,"big") +\
-            #     self.p.to_bytes(8,"big")
+            # Build response
+            self.mydh = self.getPublicDH()
+            plainResponse = self.rSender + self.theirdh
+            response = self.encryptProtocolMsg(plainResponse)
             self.currentState = DEFAULT
             self.authenticate = True
-            self._key = 'DH result'
-            response = self.stringToBytes('fakeresponseAzero')
+            self._key = self.calculateDHKey()
             return self.prependSecure(response)
 
         elif self.currentState == BZERO:
             print("Enter Bzero")
-            # TODO verify Rb 
-            # TODO get gamodp and make DH key 
-            # TODO set the self.key
-            self._key = 'DH result'
+            # Decrypt and Process
+            plainMsg = self.decryptProtocolMsg(message)
+            if plainMsg[0:R_LENGTH - 1] != self.nonce:
+                print("FAILED Rb does not have right value")
+                return "Fail"
+            self.theirdh = plainMsg[R_LENGTH:]
+            key = self.calculateDHKey()
+            self.SetSessionKey(key)
             self.authenticate = True
             self.currentState = DEFAULT
-            # self.rSender = message[1:18]
-            # decryptedMessage = self.DecryptAndVerifyMessage(message[18:57])
-            # if(self.r.to_bytes(8,"big") == decryptedMessage[18:34]):
-            #     print("Ra, the original nonce is verified")
-            # if(self.rSender.to_bytes(8,"big") == decryptedMessage[34:50]):
-            #     print("Rb, sent is the same... Authenticated!")
-
-            # self.g = decryptedMessage[57:65]
-            # self.p = decryptedMessage[65:73]
-            # self.theirdh = 33333333 #decryptedMessage[51:60]
-            # self.mydh = 55555555
-            # self.commonDH = 88888888
-            # return self.EncryptAndProtectMessage(self.rSender.to_bytes(8,"big") + self.mydh.to_bytes(8,"big"), False)
-            response = self.stringToBytes('fakeresponseBzero')
-            return self.prependSecure(response)
+            return '' # indicates to app.py code to not send message
         else:
-            print("ELSE HELO")
-            return "HELOOOOO"
+            print("Fail - in detached head state")
 
+    # =====================================
+    # TODO implement fully
+    # Obtain the public dh key 
+    # Return g*modp
+    # Return value should be bytes
+    # =====================================
     def getPublicDH(self):
-        return 890890809809089
+        return self.intToBytes(890890809809089)
+
+    # =========================================
+    # TODO implement fully
+    # Calculates session key using self.theirdh
+    # and self.mydh local variables 
+    # Return value should be bytes
+    # =========================================
+    def calculateDHKey(self):
+        # return self.theirdh * self.mydh
+        return self.intToBytes(834784237429398)
 
     def isAuthenticated(self):
         return self.authenticate
 
     # Setting the key for the current session
-    # TODO: MODIFY AS YOU SEEM FIT
     def SetSessionKey(self, key):
         self._key = key
-        pass
 
+    # =========================================
+    # TODO implement fully
+    # Calls aes function with the self.key 
+    # local variable
+    # Parameter: msg - bytes to decrypt
+    # Return value should be bytes
+    # =========================================
     def decryptProtocolMsg(self, msg):
-        # self.aes.encrypt(self.key)
+        # self.aes.decrypt(self.key)
         return msg
 
+    # =========================================
+    # TODO implement fully
+    # Calls aes function with the self.key 
+    # local variable
+    # Parameter: msg - bytes to encrypt
+    # Return value should be bytes
+    # =========================================
     def encryptProtocolMsg(self, msg):
-        # self.aes.encrypt(self.key)
+        # return self.aes.encrypt(msg, self.key)
         return msg
 
     # Encrypting messages
@@ -175,7 +175,6 @@ class Protocol:
     def EncryptAndProtectMessage(self, plain_text):
         cipher_text = plain_text
         return cipher_text
-
 
     # Decrypting and verifying messages
     # TODO: IMPLEMENT DECRYPTION AND INTEGRITY CHECK WITH THE SESSION KEY
