@@ -13,8 +13,10 @@ class Protocol:
     # Initializer (Called from app.py)
     # TODO: MODIFY ARGUMENTS AND LOGIC AS YOU SEEM FIT
     def __init__(self):
+        self.SECURE_PREPEND = 1
+        self.NOT_SECURE_PREPEND = 0
         self._key = None
-        self.identifier = None
+        self.identifier = 999# TODO make unique identifier should be 15 bytes
         self.protocolState = 0
         self.nonce = None
         self.rSender = None
@@ -31,11 +33,12 @@ class Protocol:
     # TODO: IMPLEMENT THE LOGIC (MODIFY THE INPUT ARGUMENTS AS YOU SEEM FIT)
     def GetProtocolInitiationMessage(self):
         self.nonce = secrets.token_urlsafe(16)
-        print(self.nonce)
-        print(self.identifier)
-        print(self.nonce + self.identifier)
+        # print(self.nonce)
+        # print(self.identifier)
+        # print(self.nonce + self.identifier)
+        print(type())
         self.protocolState = 1
-        return stateZero.to_bytes(1, "big") + self.nonce + self.identifier
+        return self.SECURE_PREPEND.to_bytes(1, "big") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big")
 
 
     # ==============================================================================
