@@ -1,7 +1,7 @@
 import base64
 import hashlib
-from Crypto import Random
-from Crypto.Cipher import AES
+from Cryptodome import Random
+from Cryptodome.Cipher import AES
 
 class AESCipher(object):
 
@@ -31,13 +31,3 @@ class AESCipher(object):
     @staticmethod
     def _unpad(s):
         return s[:-ord(s[len(s)-1:])]
-
-
-bytestring = "YAMAN".encode()
-cipher = AESCipher("helo")
-cipher2 = AESCipher("wassup".encode())
-
-cipher_text = cipher.encrypt(bytestring)
-cipher_text2 = cipher2.encrypt(bytestring)
-print(cipher.decrypt(cipher_text))
-print(cipher2.decrypt(cipher_text2))
