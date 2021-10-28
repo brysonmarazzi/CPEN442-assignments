@@ -4,10 +4,13 @@ import secrets
 from tkinter.constants import W
 
 
-stateZero = 0
-stateOne = 1
-stateTwo = 2
-authenticate = 3
+DEFAULT = 99
+AZERO = 0
+BZERO = 1
+AONE = 2
+BONE = 3
+ATWO = 4
+BTWO = 5
 
 class Protocol:
     # Initializer (Called from app.py)
@@ -15,7 +18,7 @@ class Protocol:
     def __init__(self):
         self._key = None
         self.identifier = None
-        self.protocolState = 0
+        # self.protocolState = 0
         self.nonce = None
         self.rSender = None
         self.r = None
@@ -24,7 +27,8 @@ class Protocol:
         self.mydh = None
         self.theirdh = None
         self.commonDH = None
-        self.currentState = 0
+        self.currentState = DEFAULT
+        self.authenticate = False
 
 
     # Creating the initial message of your protocol (to be send to the other party to bootstrap the protocol)
@@ -34,7 +38,7 @@ class Protocol:
         print(self.nonce)
         print(self.identifier)
         print(self.nonce + self.identifier)
-        self.protocolState = 1
+        self.currentState = AZERO
         return stateZero.to_bytes(1, "big") + self.nonce + self.identifier
 
 
@@ -60,7 +64,15 @@ class Protocol:
     # current state of this session. 
     #=================================================================================
     def ProcessReceivedProtocolMessage(self, message):
-        if self.currentState == 1:
+        if self.currentState == stateZero:
+            # TODO process Ra and indentifier
+            # TODO create msg to send
+            self.currentState = stateOne
+            response = ''
+            return response
+        if self.currentState == stateOne:
+            # TODO process variables inside message Ra Rb gpmodp, g, p
+            # TODO send response with rb and gpmod kab
             # self.rSender = message[16:]
             # self.r = self.nonce = secrets.token_urlsafe(16)
             # self.g = 11111111
@@ -75,10 +87,12 @@ class Protocol:
             #         self.dh.to_bytes(8,"big"), False) +\
             #     self.g.to_bytes(8,"big") +\
             #     self.p.to_bytes(8,"big")
-                
-            return message
+            self.currentState = stateTwo
+            self.authenticate = True
+            response = ''
+            return response
 
-        elif(self.currentState == 2):
+        elif self.currentState == stateTwo:
             pass
             # self.rSender = message[1:18]
             # decryptedMessage = self.DecryptAndVerifyMessage(message[18:57])
