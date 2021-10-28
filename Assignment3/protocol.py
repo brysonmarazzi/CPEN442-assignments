@@ -15,7 +15,7 @@ class Protocol:
     # TODO: MODIFY ARGUMENTS AND LOGIC AS YOU SEEM FIT
     def __init__(self):
         self._key = None
-        self.identifier = 999# TODO make unique identifier should be 15 bytes
+        self.identifier = 999 # TODO make unique identifier should be 15 bytes
         self.protocolState = 0
         self.nonce = None
         self.rSender = None
@@ -46,9 +46,6 @@ class Protocol:
     # Removes the leading identifier character from the message.
     # ==============================================================================
     def IsMessagePartOfProtocol(self, message):
-        # print(message)
-        # print(message[0])
-        # print("IsMessagePartOfProtocol")
         flag = message[0]
         message = message[1:]
         return flag
