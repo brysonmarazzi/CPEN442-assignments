@@ -76,8 +76,9 @@ class Protocol:
             self.rSender = message[0:R_LENGTH] 
 
             # Build response
-            self.mydh = self.getPublicDH()
-            messageToEncrypt = self.rSender + self.nonce + self.mydh
+            self.dh1 = self.pyDH.DiffieHellman()
+            self.dh_PK1 = self.dh1.gen_public_key()
+            messageToEncrypt = self.rSender + self.nonce + self.dh1
             response = self.nonce + self.encryptProtocolMsg(messageToEncrypt)
             self.currentState = BZERO
             return self.prependSecure(response)
@@ -93,16 +94,18 @@ class Protocol:
             # Verify Rb is correct 
             if plainMsg[R_LENGTH:R_LENGTH*2] != self.rSender:
                 raise Exception("Auth initiator recieved incorrect \"sender's nonce\" in response!")
+            # find the index of their DH
             self.theirdh = plainMsg[R_LENGTH*2:]
 
             # Build response
-            self.mydh = self.getPublicDH()
-            plainResponse = self.rSender + self.theirdh
+            self.dh2 = self.pyDH.DiffieHellman()
+            self.dh_PK2 = self.dh2.gen_public_key()
+            plainResponse = self.rSender + self.dh_PK2
             response = self.encryptProtocolMsg(plainResponse)
             self.currentState = DEFAULT
             self.authenticate = True
             print("A has authenticated!!")
-            self._key = self.calculateDHKey()
+            self.SetSessionKey(self.dh2, self.theirdh)
             return self.prependSecure(response)
 
         elif self.currentState == BZERO:
@@ -113,7 +116,7 @@ class Protocol:
                 raise Exception("Auth non-initiator recieved incorrect \"reciever's nonce\" in response!")
             self.theirdh = plainMsg[R_LENGTH:]
             dhKey = self.calculateDHKey()
-            self.SetSessionKey(dhKey)
+            self.SetSessionKey(self.dh1, self.theirdh)
             self.authenticate = True
             self.currentState = DEFAULT
             print("B has authenticated!!")
@@ -145,9 +148,8 @@ class Protocol:
         return self.authenticate
 
     # Setting the key for the current session
-    def SetSessionKey(self, key):
-        self._key = key
-        self.aesCipher = AESCipher(self._key)
+    def SetSessionKey(self, myDH, theirDH):
+        self._key = myDH.gen_shared_key(theirDH)
         pass
 
     # =========================================
