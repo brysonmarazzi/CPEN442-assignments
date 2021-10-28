@@ -60,9 +60,9 @@ class Protocol:
             # Create variables to send
             self.r = secrets.token_urlsafe(16)
             # Create DH object
-            self.dh = pyDH.DiffieHellman()
+            self.dh1 = pyDH.DiffieHellman()
             # Create DH public key to be sent 
-            self.dh_PK = self.dh.gen_public_key()
+            self.dh_PK1 = self.dh1.gen_public_key()
             #self.g = 11111111
             #self.p = 22222222
             #self.mydhB = 33333333
@@ -73,7 +73,7 @@ class Protocol:
                 self.EncryptAndProtectMessage(\
                     self.rSender.to_bytes(8,"big") +\
                     self.r.to_bytes(8,"big") +\
-                    self.dh_PK.to_bytes(8,"big"), False) +\
+                    self.dh_PK1.to_bytes(8,"big"), False)
                 #self.g.to_bytes(8,"big") +\
                 #self.p.to_bytes(8,"big")
                 
@@ -91,24 +91,35 @@ class Protocol:
             # Get diffiehellman values
             #self.g = decryptedMessage[57:65]
             #self.p = decryptedMessage[65:73]
-            self.theirdh_PK = 33333333 #decryptedMessage[51:60]
-            # Create second half of DH key
-            self.dh = pyDH.DiffieHellman()
-            self.dh_PK = self.dh.gen_public_key()
-            
-            return self.EncryptAndProtectMessage(self.rSender.to_bytes(8,"big") + self.mydh.to_bytes(8,"big"), False)
+            self.theirdh_PK = decryptedMessage[51:60]
+            # Create second half of DH key (have theirs, sending mine)
+            self.dh2 = pyDH.DiffieHellman()
+            self.dh_PK2 = self.dh.gen_public_key()
+
+            response = self.EncryptAndProtectMessage(self.rSender.to_bytes(8,"big") + self.dh_PK2.to_bytes(8,"big"), False)
+            # Can now set session key
+            self.K_s = self.SetSessionKey(self.dh2, self.theirdh_PK)
+            return response
         
-        else:
+        elif(message[0] == 2):
+            # Encrypted message with second half of diffie hellman key received
+            decryptedMessage = self.DecryptAndVerifyMessage(message[18:57])
+            if(self.r.to_bytes(8,"big") == decryptedMessage[18:34]):
+                print("Rb nonce is verified")
+            self.theirdh_PK = decryptedMessage[51:60]
+
+            # Can now compute session key
+            self.K_s = self.SetSessionKey(self.dh1, self.theirdh_PK)
 
             return "HELOOOOO"
 
 
     # Setting the key for the current session
     # TODO: MODIFY AS YOU SEEM FIT
-    def SetSessionKey(self, key):
-        self._key = key
-        pass
+    def SetSessionKey(self, myDH, theirDH):
+        self._key = myDH.gen_shared_key(theirDH)
 
+        return self._key
 
     # Encrypting messages
     # TODO: IMPLEMENT ENCRYPTION WITH THE SESSION KEY (ALSO INCLUDE ANY NECESSARY INFO IN THE ENCRYPTED MESSAGE FOR INTEGRITY PROTECTION)
