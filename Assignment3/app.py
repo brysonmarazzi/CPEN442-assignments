@@ -79,7 +79,6 @@ class Assignment3VPN:
     # Create a TCP connection between the client and the server
     def CreateConnection(self):
         # Change button states
-        self.prtcl.GetProtocolInitiationMessage()
         self._ChangeConnectionMode()
         
         # Create connection
@@ -150,15 +149,15 @@ class Assignment3VPN:
                     break
 
                 # Checking if the received message is part of your protocol
-                # TODO: MODIFY THE INPUT ARGUMENTS AND LOGIC IF NECESSARY
                 if self.prtcl.IsMessagePartOfProtocol(cipher_text) and not self.prtcl.isAuthenticated():
+                    cipher_text = cipher_text[1:] # Remove flag
                     # Disabling the button to prevent repeated clicks
                     self.secureButton["state"] = "disabled"
                     # Processing the protocol message
-                    response = self.prtcl.ProcessReceivedProtocolMessage(cipher_text)
+                    byteResponse = self.prtcl.ProcessReceivedProtocolMessage(cipher_text)
 
-                    if(response != None or len(response) != 0):
-                        self._SendMessage(response)
+                    if byteResponse != None:
+                        self._SendMessage(byteResponse)
 
                 # Otherwise, decrypting and showing the messaage
                 elif self.prtcl.isAuthenticated():
@@ -178,8 +177,6 @@ class Assignment3VPN:
     # Send data to the other party
     # message - a byte array 
     def _SendMessage(self, byteMsg):
-        # print(type(message))
-        # message = message.decode('utf-16')
         plain_text = byteMsg
         cipher_text = self.prtcl.EncryptAndProtectMessage(plain_text)
         self.conn.send(cipher_text)
@@ -189,12 +186,8 @@ class Assignment3VPN:
     def SecureConnection(self):
         # disable the button to prevent repeated clicks
         self.secureButton["state"] = "disabled"
-
-        # TODO: THIS IS WHERE YOU SHOULD IMPLEMENT THE START OF YOUR MUTUAL AUTHENTICATION AND KEY ESTABLISHMENT PROTOCOL, MODIFY AS YOU SEEM FIT
-        init_message = self.prtcl.GetProtocolInitiationMessage()
-        print("INIT MESAGE: ")
-        print(init_message)
-        self._SendMessage(init_message)
+        initByteMessage = self.prtcl.GetProtocolInitiationMessage()
+        self._SendMessage(initByteMessage)
 
 
     # Called when SendMessage button is clicked
@@ -202,7 +195,8 @@ class Assignment3VPN:
         text = self.textMessage.get()
         if  text != "" and self.s is not None:
             try:
-                self._SendMessage(text)
+                message = self.prtcl.prependNotSecure(text.encode())
+                self._SendMessage(message)
                 self._AppendMessage("You: {}".format(text))
                 self.textMessage.set("")
             except Exception as e:
