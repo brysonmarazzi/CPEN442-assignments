@@ -97,6 +97,8 @@ class Protocol:
             pass
         else:
             return "HELOOOOO"
+    def isAuthenticated():
+        return True
 
     # Setting the key for the current session
     # TODO: MODIFY AS YOU SEEM FIT
