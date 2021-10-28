@@ -24,9 +24,20 @@ class AESCipher(object):
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
 
+
     def _pad(self, s):
-        return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs)
+        return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs).encode()
 
     @staticmethod
     def _unpad(s):
         return s[:-ord(s[len(s)-1:])]
+
+
+bytestring = "YAMAN".encode()
+cipher = AESCipher("helo")
+cipher2 = AESCipher("wassup".encode())
+
+cipher_text = cipher.encrypt(bytestring)
+cipher_text2 = cipher2.encrypt(bytestring)
+print(cipher.decrypt(cipher_text))
+print(cipher2.decrypt(cipher_text2))

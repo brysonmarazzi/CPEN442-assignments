@@ -177,9 +177,9 @@ class Assignment3VPN:
     # Send data to the other party
     # message - a byte array 
     def _SendMessage(self, byteMsg):
-        plain_text = byteMsg
-        cipher_text = self.prtcl.EncryptAndProtectMessage(plain_text)
-        self.conn.send(cipher_text)
+        # plain_text = byteMsg
+        # cipher_text = self.prtcl.EncryptAndProtectMessage(plain_text)
+        self.conn.send(byteMsg)
             
 
     # Secure connection with mutual authentication and key establishment

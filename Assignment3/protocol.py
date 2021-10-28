@@ -16,7 +16,8 @@ R_LENGTH = 16
 class Protocol:
     # Initializer (Called from app.py)
     def __init__(self, sharedKey):
-        self._key = sharedKey # The _key starts off with value of sharedKey, but we store the value of the session key later on.
+        self.SetSessionKey(sharedKey)
+        # self._key = sharedKey # The _key starts off with value of sharedKey, but we store the value of the session key later on.
         self.identifier = self.intToBytes(999) # TODO make unique identifier should be 15 bytes.
         self.rIdentifier = None # Unique integer that identifies the other computer.
         self.nonce = None # Random 16 byte value, should be unique each session.
@@ -81,7 +82,7 @@ class Protocol:
             # Build response
             self.mydh = self.getPublicDH()
             messageToEncrypt = self.rSender + self.nonce + self.mydh
-            response = self.nonce + self.encryptProtocolMsg(messageToEncrypt)
+            response = self.nonce + self.EncryptAndProtectMessage(messageToEncrypt)
             self.currentState = BZERO
             return self.prependSecure(response)
 
@@ -89,7 +90,7 @@ class Protocol:
             print("Enter Azero")
             # Decrypt and process
             self.rSender = message[0:R_LENGTH]
-            plainMsg = self.decryptProtocolMsg(message[R_LENGTH:])
+            plainMsg = self.DecryptAndVerifyMessage(message[R_LENGTH:])
             # Verify Ra is correct 
             if plainMsg[0:R_LENGTH] != self.nonce:
                 raise Exception("Auth initiator recieved incorrect \"receiver's nonce\" in response!")
@@ -101,7 +102,7 @@ class Protocol:
             # Build response
             self.mydh = self.getPublicDH()
             plainResponse = self.rSender + self.theirdh
-            response = self.encryptProtocolMsg(plainResponse)
+            response = self.EncryptAndProtectMessage(plainResponse)
             self.currentState = DEFAULT
             self.authenticate = True
             print("A has authenticated!!")
@@ -111,7 +112,7 @@ class Protocol:
         elif self.currentState == BZERO:
             print("Enter Bzero")
             # Decrypt and Process
-            plainMsg = self.decryptProtocolMsg(message)
+            plainMsg = self.DecryptAndVerifyMessage(message)
             if plainMsg[0:R_LENGTH] != self.nonce:
                 raise Exception("Auth non-initiator recieved incorrect \"reciever's nonce\" in response!")
             self.theirdh = plainMsg[R_LENGTH:]
@@ -159,9 +160,9 @@ class Protocol:
     # Parameter: msg - bytes to decrypt
     # Return value should be bytes
     # =========================================
-    def decryptProtocolMsg(self, msg):
-        # return aes.decrypt(self.key, msg)
-        return msg
+    # def decryptProtocolMsg(self, msg):
+    #     # return aes.decrypt(self.key, msg)
+    #     return msg
 
     # =========================================
     # TODO implement fully
@@ -170,9 +171,9 @@ class Protocol:
     # Parameter: msg - bytes to encrypt
     # Return value should be bytes
     # =========================================
-    def encryptProtocolMsg(self, msg):
-        # return aes.encrypt(msg, self.key)
-        return msg
+    # def encryptProtocolMsg(self, msg):
+    #     # return aes.encrypt(msg, self.key)
+    #     return msg
 
     # Encrypting messages
     # TODO: IMPLEMENT ENCRYPTION WITH THE SESSION KEY (ALSO INCLUDE ANY NECESSARY INFO IN THE ENCRYPTED MESSAGE FOR INTEGRITY PROTECTION)
