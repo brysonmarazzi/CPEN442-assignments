@@ -155,7 +155,6 @@ class Assignment3VPN:
                     self.secureButton["state"] = "disabled"
                     # Processing the protocol message
                     response = self.prtcl.ProcessReceivedProtocolMessage(cipher_text)
-                    self.prtcl.IncrementState()
 
                     if(response != None or len(response) != 0):
                         self._SendMessage(response)
@@ -174,7 +173,10 @@ class Assignment3VPN:
 
 
     # Send data to the other party
+    # message - a byte array 
     def _SendMessage(self, message):
+        # print(type(message))
+        # message = message.decode('utf-16')
         plain_text = message
         cipher_text = self.prtcl.EncryptAndProtectMessage(plain_text)
         self.conn.send(cipher_text.encode())
@@ -187,6 +189,8 @@ class Assignment3VPN:
 
         # TODO: THIS IS WHERE YOU SHOULD IMPLEMENT THE START OF YOUR MUTUAL AUTHENTICATION AND KEY ESTABLISHMENT PROTOCOL, MODIFY AS YOU SEEM FIT
         init_message = self.prtcl.GetProtocolInitiationMessage()
+        print("INIT MESAGE: ")
+        print(init_message)
         self._SendMessage(init_message)
 
 
