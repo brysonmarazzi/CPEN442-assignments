@@ -1,5 +1,6 @@
 import hashlib
 import secrets
+import pyDH
 
 #define 
 stateZero = 0
@@ -54,39 +55,51 @@ class Protocol:
     # THROW EXCEPTION IF AUTHENTICATION FAILS
     def ProcessReceivedProtocolMessage(self, message):
         if(message[0] == 0):
-            self.rSender = message[16:]
-            self.r = self.nonce = secrets.token_urlsafe(16)
-            self.g = 11111111
-            self.p = 22222222
-            self.mydh = 33333333
+            # Ra recieved by sender
+            self.rSender = message[16:] 
+            # Create variables to send
+            self.r = secrets.token_urlsafe(16)
+            # Create DH object
+            self.dh = pyDH.DiffieHellman()
+            # Create DH public key to be sent 
+            self.dh_PK = self.dh.gen_public_key()
+            #self.g = 11111111
+            #self.p = 22222222
+            #self.mydhB = 33333333
             self.protocolState = 1
-            message = self.protocolState.to_bytes(1,"big") + \
+            # Send excrypted variables
+            response = self.protocolState.to_bytes(1,"big") + \
                 self.r.to_bytes(8,"big") +\
                 self.EncryptAndProtectMessage(\
                     self.rSender.to_bytes(8,"big") +\
                     self.r.to_bytes(8,"big") +\
-                    self.dh.to_bytes(8,"big"), False) +\
-                self.g.to_bytes(8,"big") +\
-                self.p.to_bytes(8,"big")
+                    self.dh_PK.to_bytes(8,"big"), False) +\
+                #self.g.to_bytes(8,"big") +\
+                #self.p.to_bytes(8,"big")
                 
-            return message
+            return response
 
         elif(message[0] == 1):
+            # Rb recieved by sender
             self.rSender = message[1:18]
+            # Decrypt the message received by Bob
             decryptedMessage = self.DecryptAndVerifyMessage(message[18:57])
             if(self.r.to_bytes(8,"big") == decryptedMessage[18:34]):
                 print("Ra, the original nonce is verified")
             if(self.rSender.to_bytes(8,"big") == decryptedMessage[34:50]):
                 print("Rb, sent is the same... Authenticated!")
-
-            self.g = decryptedMessage[57:65]
-            self.p = decryptedMessage[65:73]
-            self.theirdh = 33333333 #decryptedMessage[51:60]
-            self.mydh = 55555555
-            self.commonDH = 88888888
+            # Get diffiehellman values
+            #self.g = decryptedMessage[57:65]
+            #self.p = decryptedMessage[65:73]
+            self.theirdh_PK = 33333333 #decryptedMessage[51:60]
+            # Create second half of DH key
+            self.dh = pyDH.DiffieHellman()
+            self.dh_PK = self.dh.gen_public_key()
+            
             return self.EncryptAndProtectMessage(self.rSender.to_bytes(8,"big") + self.mydh.to_bytes(8,"big"), False)
         
         else:
+
             return "HELOOOOO"
 
 
