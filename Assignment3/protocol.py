@@ -1,14 +1,18 @@
-#define 
 from os import curdir
 import secrets
 from tkinter.constants import W
 
-
+# STATES
 DEFAULT = 99
 AZERO = 0
 BZERO = 1
+
+# PREPEND DEFINiTIONS
 SECURE_PREPEND = 1
 NOT_SECURE_PREPEND = 0
+
+# VAR LENGTHS
+R_LENGTH = 16
 
 class Protocol:
     # Initializer (Called from app.py)
@@ -16,6 +20,7 @@ class Protocol:
     def __init__(self):
         self._key = None
         self.identifier = 999 # TODO make unique identifier should be 15 bytes
+        self.RIdentifier = None
         self.protocolState = 0
         self.nonce = None
         self.rSender = None
@@ -73,12 +78,20 @@ class Protocol:
     def ProcessReceivedProtocolMessage(self, message):
         if self.currentState == DEFAULT:
             print("Enter Default")
+            self.RIdentifier = message[0:15]
+            self.rSender = message[16:31]
             # TODO process Ra and indentifier
             # TODO create msg to send
             self.currentState = BZERO
-            response = self.stringToBytes('fakeresponseDefault')
+            messageToEncrypt = self.rSender + self.nonce
+
+            response = self.nonce + messageToEncrypt
+            
+
+
+            responseInBytes = self.stringToBytes('fakeresponseDefault')
             # return response
-            return self.prependSecure(response)
+            return self.prependSecure(responseInBytes)
         if self.currentState == AZERO:
             print("Enter Azero")
             # TODO process variables inside message Ra Rb gpmodp, g, p
