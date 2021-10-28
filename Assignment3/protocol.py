@@ -1,8 +1,13 @@
+from aes import AESCipher
+
 class Protocol:
     # Initializer (Called from app.py)
     # TODO: MODIFY ARGUMENTS AND LOGIC AS YOU SEEM FIT
-    def __init__(self):
+    def __init__(self, sharedSecret):
         self._key = None
+        self.sharedSecret = sharedSecret
+        self.aesCipher = AESCipher(sharedSecret) # Shared secret is hashed inside AESCipher constructor
+        self.commonDH = None
         pass
 
 
@@ -29,6 +34,7 @@ class Protocol:
     # TODO: MODIFY AS YOU SEEM FIT
     def SetSessionKey(self, key):
         self._key = key
+        self.aesCipher = AESCipher(self._key)
         pass
 
 
@@ -36,7 +42,10 @@ class Protocol:
     # TODO: IMPLEMENT ENCRYPTION WITH THE SESSION KEY (ALSO INCLUDE ANY NECESSARY INFO IN THE ENCRYPTED MESSAGE FOR INTEGRITY PROTECTION)
     # RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
     def EncryptAndProtectMessage(self, plain_text):
-        cipher_text = plain_text
+        if self._key == None:
+            cipher_text = plain_text
+        else:
+            cipher_text = self.aesCipher.encrypt(plain_text)
         return cipher_text
 
 
@@ -44,5 +53,8 @@ class Protocol:
     # TODO: IMPLEMENT DECRYPTION AND INTEGRITY CHECK WITH THE SESSION KEY
     # RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
     def DecryptAndVerifyMessage(self, cipher_text):
-        plain_text = cipher_text
+        if self._key == None:
+            plain_text = cipher_text
+        else:
+            plain_text = self.aesCipher.decrypt(cipher_text)
         return plain_text
