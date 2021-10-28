@@ -34,8 +34,8 @@ class Protocol:
     def GetProtocolInitiationMessage(self):
         self.nonce = secrets.token_urlsafe(16)
         self.protocolState = 1
-        print(self.SECURE_PREPEND.to_bytes(1, "little") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big"))
-        return self.SECURE_PREPEND.to_bytes(1, "little") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big")
+        #print(self.SECURE_PREPEND.to_bytes(1, "big") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big"))
+        return self.SECURE_PREPEND.to_bytes(1, "big") + bytes(self.nonce, 'utf-16') + self.identifier.to_bytes(15, "big")
 
 
     # ==============================================================================
@@ -43,9 +43,6 @@ class Protocol:
     # Removes the leading identifier character from the message.
     # ==============================================================================
     def IsMessagePartOfProtocol(self, message):
-        # print(message)
-        # print(message[0])
-        # print("IsMessagePartOfProtocol")
         flag = message[0]
         message = message[1:]
         return flag

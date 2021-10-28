@@ -165,7 +165,9 @@ class Assignment3VPN:
                 elif self.prtcl.isAuthenticated():
                     plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
-                else: # Case where plaintext is being sent back and forth. 
+                
+                # Case where plaintext is being sent back and forth. 
+                else:
                     plain_text = cipher_text
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
