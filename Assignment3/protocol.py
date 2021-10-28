@@ -37,7 +37,6 @@ class Protocol:
         # print(self.nonce + self.identifier)
         self.nonce = secrets.token_urlsafe(16)
         self.currentState = AZERO
-        return "1init"
         byteMsg = self.stringToBytes(self.nonce) + self.intToBytes(self.identifier)
         return self.prependSecure(byteMsg)
 
@@ -80,8 +79,8 @@ class Protocol:
             # TODO process Ra and indentifier
             # TODO create msg to send
             self.currentState = BZERO
-            response = '1fakeresponseDefault'
-            return response
+            response = self.stringToBytes('fakeresponseDefault')
+            # return response
             return self.prependSecure(response)
         if self.currentState == AZERO:
             print("Enter Azero")
@@ -104,8 +103,7 @@ class Protocol:
             self.currentState = DEFAULT
             self.authenticate = True
             self._key = 'DH result'
-            response = '1fakeresponseAzero'
-            return response
+            response = self.stringToBytes('fakeresponseAzero')
             return self.prependSecure(response)
 
         elif self.currentState == BZERO:
@@ -129,8 +127,7 @@ class Protocol:
             # self.mydh = 55555555
             # self.commonDH = 88888888
             # return self.EncryptAndProtectMessage(self.rSender.to_bytes(8,"big") + self.mydh.to_bytes(8,"big"), False)
-            response = '1fakeresponseBzero'
-            return response
+            response = self.stringToBytes('fakeresponseBzero')
             return self.prependSecure(response)
         else:
             print("ELSE HELO")
@@ -148,6 +145,8 @@ class Protocol:
     # Encrypting messages
     # TODO: IMPLEMENT ENCRYPTION WITH THE SESSION KEY (ALSO INCLUDE ANY NECESSARY INFO IN THE ENCRYPTED MESSAGE FOR INTEGRITY PROTECTION)
     # RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
+    # TODO deal with bytes
+    # plain_text is a byte string not a normal string
     def EncryptAndProtectMessage(self, plain_text):
         cipher_text = plain_text
         return cipher_text
