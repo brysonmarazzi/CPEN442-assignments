@@ -79,6 +79,7 @@ class Assignment3VPN:
     # Create a TCP connection between the client and the server
     def CreateConnection(self):
         # Change button states
+        self.prtcl.GetProtocolInitiationMessage()
         self._ChangeConnectionMode()
         
         # Create connection
@@ -150,15 +151,23 @@ class Assignment3VPN:
 
                 # Checking if the received message is part of your protocol
                 # TODO: MODIFY THE INPUT ARGUMENTS AND LOGIC IF NECESSARY
-                if self.prtcl.IsMessagePartOfProtocol(cipher_text):
+                if self.prtcl.IsMessagePartOfProtocol(cipher_text) and not self.prtcl.isAuthenticated():
                     # Disabling the button to prevent repeated clicks
                     self.secureButton["state"] = "disabled"
                     # Processing the protocol message
-                    self.prtcl.ProcessReceivedProtocolMessage(cipher_text)
+                    response = self.prtcl.ProcessReceivedProtocolMessage(cipher_text)
+
+                    if(response != None or len(response) != 0):
+                        self._SendMessage(response)
 
                 # Otherwise, decrypting and showing the messaage
-                else:
+                elif self.prtcl.isAuthenticated():
                     plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
+                    self._AppendMessage("Other: {}".format(plain_text.decode()))
+                
+                # Case where plaintext is being sent back and forth. 
+                else:
+                    plain_text = cipher_text
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
             except Exception as e:
@@ -167,10 +176,13 @@ class Assignment3VPN:
 
 
     # Send data to the other party
-    def _SendMessage(self, message):
-        plain_text = message
+    # message - a byte array 
+    def _SendMessage(self, byteMsg):
+        # print(type(message))
+        # message = message.decode('utf-16')
+        plain_text = byteMsg
         cipher_text = self.prtcl.EncryptAndProtectMessage(plain_text)
-        self.conn.send(cipher_text.encode())
+        self.conn.send(cipher_text)
             
 
     # Secure connection with mutual authentication and key establishment
@@ -180,6 +192,8 @@ class Assignment3VPN:
 
         # TODO: THIS IS WHERE YOU SHOULD IMPLEMENT THE START OF YOUR MUTUAL AUTHENTICATION AND KEY ESTABLISHMENT PROTOCOL, MODIFY AS YOU SEEM FIT
         init_message = self.prtcl.GetProtocolInitiationMessage()
+        print("INIT MESAGE: ")
+        print(init_message)
         self._SendMessage(init_message)
 
 
