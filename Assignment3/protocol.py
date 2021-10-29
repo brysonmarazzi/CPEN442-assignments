@@ -78,7 +78,7 @@ class Protocol:
             # Build response
             self.dh1 = self.pyDH.DiffieHellman()
             self.dh_PK1 = self.dh1.gen_public_key()
-            messageToEncrypt = self.rSender + self.nonce + self.dh1
+            messageToEncrypt = self.rSender + self.nonce + self.dh_PK1
             response = self.nonce + self.encryptProtocolMsg(messageToEncrypt)
             self.currentState = BZERO
             return self.prependSecure(response)
@@ -105,7 +105,7 @@ class Protocol:
             self.currentState = DEFAULT
             self.authenticate = True
             print("A has authenticated!!")
-            self.SetSessionKey(self.dh2, self.theirdh)
+            self.SetSessionKey(self.dh_PK2, self.theirdh)
             return self.prependSecure(response)
 
         elif self.currentState == BZERO:
@@ -116,7 +116,7 @@ class Protocol:
                 raise Exception("Auth non-initiator recieved incorrect \"reciever's nonce\" in response!")
             self.theirdh = plainMsg[R_LENGTH:]
             dhKey = self.calculateDHKey()
-            self.SetSessionKey(self.dh1, self.theirdh)
+            self.SetSessionKey(self.dh_PK1, self.theirdh)
             self.authenticate = True
             self.currentState = DEFAULT
             print("B has authenticated!!")
