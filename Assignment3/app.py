@@ -195,9 +195,9 @@ class Assignment3VPN:
         if  text != "" and self.s is not None:
             try:
                 if self.prtcl.isAuthenticated:
-                        message = self.prtcl.prependSecure(text.encode())
-                        cipher_text = self.prtcl.EncryptAndProtectMessage(message)
-                        self._SendMessage(cipher_text)
+                        cipher_text = self.prtcl.EncryptAndProtectMessage(text.encode())
+                        message = self.prtcl.prependSecure(cipher_text)
+                        self._SendMessage(message)
                         self._AppendMessage("You: {}".format(text))
                         self.textMessage.set("")
                 else:
