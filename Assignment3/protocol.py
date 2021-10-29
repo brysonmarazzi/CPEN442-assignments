@@ -37,7 +37,7 @@ class Protocol:
         print("Enter Init")
         self.nonce = secrets.token_bytes(R_LENGTH)
         self.currentState = AZERO
-        byteMsg = self.identifier + self.nonce
+        byteMsg = self.nonce
         return self.prependSecure(byteMsg)
 
     # ------------------------------------------------------------------------------
@@ -76,8 +76,7 @@ class Protocol:
             print("Enter Default")
             # Process data in message
             self.nonce = secrets.token_bytes(R_LENGTH)
-            self.rIdentifier = message[0:R_LENGTH] # TODO should we use this value?
-            self.rSender = message[R_LENGTH:R_LENGTH*2]
+            self.rSender = message[0:R_LENGTH] 
 
             # Build response
             self.mydh = self.getPublicDH()
@@ -133,6 +132,7 @@ class Protocol:
     # Return value should be bytes
     # =====================================
     def getPublicDH(self):
+
         return self.intToBytes(890890809809089)
 
     # =========================================
