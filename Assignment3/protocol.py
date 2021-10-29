@@ -79,7 +79,7 @@ class Protocol:
             self.rSender = message[0:R_LENGTH] 
 
             # Build response
-            self.myDH = self.dh.gen_public_key()
+            self.myDH = self.generateDHKey()
             messageToEncrypt = self.rSender + self.nonce + self.myDH
             response = self.nonce + self.EncryptAndProtectMessage(messageToEncrypt)
             self.currentState = BZERO
@@ -100,7 +100,7 @@ class Protocol:
             self.theirDH = plainMsg[R_LENGTH*2:]
 
             # Build response
-            self.myDH = self.dh.gen_public_key()
+            self.myDH = self.generateDHKey()
             plainResponse = self.rSender + self.myDH
             response = self.EncryptAndProtectMessage(plainResponse)
             self.currentState = DEFAULT
@@ -142,6 +142,9 @@ class Protocol:
         self._key = key
         self.aesCipher = AESCipher(self._key)
 
+    def generateDHKey(self):
+        return self.dh.gen_public_key().to_bytes(byteorder="big")
+        
     # Encrypting messages
     # TODO: IMPLEMENT ENCRYPTION WITH THE SESSION KEY (ALSO INCLUDE ANY NECESSARY INFO IN THE ENCRYPTED MESSAGE FOR INTEGRITY PROTECTION)
     # RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
