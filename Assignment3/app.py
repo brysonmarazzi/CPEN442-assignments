@@ -170,7 +170,6 @@ class Assignment3VPN:
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
             except Exception as e:
-                print(cipher_text)
                 self._AppendLog("RECEIVER_THREAD: Error receiving data: {}".format(str(e)))
                 return False
 
@@ -178,8 +177,6 @@ class Assignment3VPN:
     # Send data to the other party
     # message - a byte array 
     def _SendMessage(self, byteMsg):
-        # plain_text = byteMsg
-        # cipher_text = self.prtcl.EncryptAndProtectMessage(plain_text)
         self.conn.send(byteMsg)
             
 

@@ -16,8 +16,8 @@ R_LENGTH = 16
 class Protocol:
     # Initializer (Called from app.py)
     def __init__(self, sharedKey):
-        self.SetSessionKey(sharedKey)
-        # self._key = sharedKey # The _key starts off with value of sharedKey, but we store the value of the session key later on.
+        self._key = None
+        self.SetSessionKey(sharedKey) # The _key starts off with value of sharedKey, but we store the value of the session key later on.
         self.identifier = self.intToBytes(999) # TODO make unique identifier should be 15 bytes.
         self.rIdentifier = None # Unique integer that identifies the other computer.
         self.nonce = None # Random 16 byte value, should be unique each session.
@@ -153,28 +153,6 @@ class Protocol:
         self._key = key
         self.aesCipher = AESCipher(self._key)
         pass
-
-    # =========================================
-    # TODO implement fully
-    # Calls aes function with the self.key 
-    # local variable
-    # Parameter: msg - bytes to decrypt
-    # Return value should be bytes
-    # =========================================
-    # def decryptProtocolMsg(self, msg):
-    #     # return aes.decrypt(self.key, msg)
-    #     return msg
-
-    # =========================================
-    # TODO implement fully
-    # Calls aes function with the self.key 
-    # local variable
-    # Parameter: msg - bytes to encrypt
-    # Return value should be bytes
-    # =========================================
-    # def encryptProtocolMsg(self, msg):
-    #     # return aes.encrypt(msg, self.key)
-    #     return msg
 
     # Encrypting messages
     # TODO: IMPLEMENT ENCRYPTION WITH THE SESSION KEY (ALSO INCLUDE ANY NECESSARY INFO IN THE ENCRYPTED MESSAGE FOR INTEGRITY PROTECTION)
