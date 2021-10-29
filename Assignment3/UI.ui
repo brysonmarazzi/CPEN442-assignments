@@ -114,7 +114,7 @@
             </child>
             <child>
               <object class="ttk.Entry" id="portEntry">
-                <property name="text" translatable="yes">42168</property>
+                <property name="text" translatable="yes">5000</property>
                 <property name="textvariable">string:port</property>
                 <property name="width">31</property>
                 <layout manager="grid">

@@ -161,12 +161,13 @@ class Assignment3VPN:
 
                 # Otherwise, decrypting and showing the messaage
                 elif self.prtcl.isAuthenticated():
+                    cipher_text = cipher_text[1:] # Remove flag
                     plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                 
                 # Case where plaintext is being sent back and forth. 
                 else:
-                    plain_text = cipher_text
+                    plain_text = cipher_text[1:] # Remove flag
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
             except Exception as e:
@@ -177,9 +178,7 @@ class Assignment3VPN:
     # Send data to the other party
     # message - a byte array 
     def _SendMessage(self, byteMsg):
-        plain_text = byteMsg
-        cipher_text = self.prtcl.EncryptAndProtectMessage(plain_text)
-        self.conn.send(cipher_text)
+        self.conn.send(byteMsg)
             
 
     # Secure connection with mutual authentication and key establishment
@@ -195,10 +194,17 @@ class Assignment3VPN:
         text = self.textMessage.get()
         if  text != "" and self.s is not None:
             try:
-                message = self.prtcl.prependNotSecure(text.encode())
-                self._SendMessage(message)
-                self._AppendMessage("You: {}".format(text))
-                self.textMessage.set("")
+                if self.prtcl.isAuthenticated():
+                        cipher_text = self.prtcl.EncryptAndProtectMessage(text.encode())
+                        message = self.prtcl.prependSecure(cipher_text)
+                        self._SendMessage(message)
+                        self._AppendMessage("You: {}".format(text))
+                        self.textMessage.set("")
+                else:
+                        message = self.prtcl.prependNotSecure(text.encode())
+                        self._SendMessage(message)
+                        self._AppendMessage("You: {}".format(text))
+                        self.textMessage.set("")
             except Exception as e:
                 self._AppendLog("SENDING_MESSAGE: Error sending data: {}".format(str(e)))
                 
