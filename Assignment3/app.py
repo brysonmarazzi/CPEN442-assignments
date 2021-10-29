@@ -148,8 +148,11 @@ class Assignment3VPN:
                     self._AppendLog("RECEIVER_THREAD: Received empty message")
                     break
 
+                print("RECIEVED: " + str(cipher_text))
+
                 # Checking if the received message is part of your protocol
                 if self.prtcl.IsMessagePartOfProtocol(cipher_text) and not self.prtcl.isAuthenticated():
+                    print("is protocol and not auth")
                     cipher_text = cipher_text[1:] # Remove flag
                     # Disabling the button to prevent repeated clicks
                     self.secureButton["state"] = "disabled"
@@ -161,12 +164,15 @@ class Assignment3VPN:
 
                 # Otherwise, decrypting and showing the messaage
                 elif self.prtcl.isAuthenticated():
+                    print("auth")
+                    cipher_text = cipher_text[1:] # Remove flag
                     plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                 
                 # Case where plaintext is being sent back and forth. 
                 else:
-                    plain_text = cipher_text
+                    print("else plain")
+                    plain_text = cipher_text[1:] # Remove flag
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
             except Exception as e:
@@ -193,7 +199,7 @@ class Assignment3VPN:
         text = self.textMessage.get()
         if  text != "" and self.s is not None:
             try:
-                if self.prtcl.isAuthenticated:
+                if self.prtcl.isAuthenticated():
                         message = self.prtcl.prependSecure(text.encode())
                         cipher_text = self.prtcl.EncryptAndProtectMessage(message)
                         self._SendMessage(cipher_text)
