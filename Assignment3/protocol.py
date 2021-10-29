@@ -132,14 +132,15 @@ class Protocol:
     # Return value should be bytes
     # =========================================
     def calculateDHKey(self):
-        return self.dh.gen_shared_key(self.theirDH)
+        return self.myDH.gen_shared_key(self.theirDH)
 
     def isAuthenticated(self):
         return self.authenticate
 
     # Setting the key for the current session
-    def SetSessionKey(self):
-        self._key = self.myDH.gen_shared_key(self.theirDH)
+    def SetSessionKey(self, key):
+        self._key = key
+        self.aesCipher = AESCipher(self._key)
 
     # Encrypting messages
     # TODO: IMPLEMENT ENCRYPTION WITH THE SESSION KEY (ALSO INCLUDE ANY NECESSARY INFO IN THE ENCRYPTED MESSAGE FOR INTEGRITY PROTECTION)
