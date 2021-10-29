@@ -170,6 +170,7 @@ class Assignment3VPN:
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
             except Exception as e:
+                print(cipher_text)
                 self._AppendLog("RECEIVER_THREAD: Error receiving data: {}".format(str(e)))
                 return False
 
@@ -195,10 +196,17 @@ class Assignment3VPN:
         text = self.textMessage.get()
         if  text != "" and self.s is not None:
             try:
-                message = self.prtcl.prependNotSecure(text.encode())
-                self._SendMessage(message)
-                self._AppendMessage("You: {}".format(text))
-                self.textMessage.set("")
+                if self.prtcl.isAuthenticated:
+                        message = self.prtcl.prependSecure(text.encode())
+                        cipher_text = self.prtcl.EncryptAndProtectMessage(message)
+                        self._SendMessage(cipher_text)
+                        self._AppendMessage("You: {}".format(text))
+                        self.textMessage.set("")
+                else:
+                        message = self.prtcl.prependNotSecure(text.encode())
+                        self._SendMessage(message)
+                        self._AppendMessage("You: {}".format(text))
+                        self.textMessage.set("")
             except Exception as e:
                 self._AppendLog("SENDING_MESSAGE: Error sending data: {}".format(str(e)))
                 

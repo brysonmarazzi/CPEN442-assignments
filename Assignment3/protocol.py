@@ -106,7 +106,8 @@ class Protocol:
             self.currentState = DEFAULT
             self.authenticate = True
             print("A has authenticated!!")
-            self._key = self.calculateDHKey()
+            dhKey = self.calculateDHKey()
+            self.SetSessionKey(dhKey)
             return self.prependSecure(response)
 
         elif self.currentState == BZERO:

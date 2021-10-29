@@ -1,7 +1,7 @@
 import base64
 import hashlib
-from Cryptodome import Random
-from Cryptodome.Cipher import AES
+from Crypto import Random
+from Crypto.Cipher import AES
 
 class AESCipher(object):
 
@@ -13,16 +13,22 @@ class AESCipher(object):
             self.key = hashlib.sha256(str(key).encode()).digest()
 
     def encrypt(self, raw):
+        # print("encrypting...")
+        # print(raw)
         raw = self._pad(raw)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return base64.b64encode(iv + cipher.encrypt(raw))
 
     def decrypt(self, enc):
+        # print("decrtpting***")
+        # print(enc)
         enc = base64.b64decode(enc)
+        # print("yaman")
+        # print(enc)
         iv = enc[:AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
+        return self._unpad(cipher.decrypt(enc[AES.block_size:]))
 
 
     def _pad(self, s):
