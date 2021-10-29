@@ -161,12 +161,13 @@ class Assignment3VPN:
 
                 # Otherwise, decrypting and showing the messaage
                 elif self.prtcl.isAuthenticated():
+                    cipher_text = cipher_text[1:] # Remove flag
                     plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                 
                 # Case where plaintext is being sent back and forth. 
                 else:
-                    plain_text = cipher_text
+                    plain_text = cipher_text[1:] # Remove flag
                     self._AppendMessage("Other: {}".format(plain_text.decode()))
                     
             except Exception as e:
