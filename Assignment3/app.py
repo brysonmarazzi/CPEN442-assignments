@@ -162,8 +162,12 @@ class Assignment3VPN:
                 # Otherwise, decrypting and showing the messaage
                 elif self.prtcl.isAuthenticated():
                     cipher_text = cipher_text[1:] # Remove flag
-                    plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
-                    self._AppendMessage("Other: {}".format(plain_text.decode()))
+                    if self.prtcl.verify_hashed_ciphertext(cipher_text):
+                        plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)
+                        self._AppendMessage("Other: {}".format(plain_text.decode()))
+                    else:
+                        self._AppendLog("Hash does not match, integrity check failed!")
+                        return False
                 
                 # Case where plaintext is being sent back and forth. 
                 else:
@@ -196,7 +200,8 @@ class Assignment3VPN:
             try:
                 if self.prtcl.isAuthenticated():
                         cipher_text = self.prtcl.EncryptAndProtectMessage(text.encode())
-                        message = self.prtcl.prependSecure(cipher_text)
+                        hashed_cipher_text = self.prtcl.appendHash(cipher_text)
+                        message = self.prtcl.prependSecure(hashed_cipher_text)
                         self._SendMessage(message)
                         self._AppendMessage("You: {}".format(text))
                         self.textMessage.set("")

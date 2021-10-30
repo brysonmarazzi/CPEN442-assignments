@@ -1,6 +1,7 @@
 from aes import AESCipher
 import secrets
 import pyDH
+from hashlib import sha256
 
 # STATES
 DEFAULT = 0
@@ -167,3 +168,16 @@ class Protocol:
         else:
             plain_text = self.aesCipher.decrypt(cipher_text)
         return plain_text
+
+    def appendHash(self, byte_text):
+        hashed_text = sha256(byte_text).digest()
+        return (byte_text + hashed_text)
+
+    def verify_hashed_ciphertext(self, byte_cipher_text):
+        cipher_text = byte_cipher_text[:-32]
+        given_hash = byte_cipher_text[-32:]
+
+        test_hash = sha256(cipher_text).digest()
+        if test_hash == given_hash:
+            return True
+        return False
