@@ -167,6 +167,7 @@ class Assignment3VPN:
                         self._AppendMessage("Other: {}".format(plain_text.decode()))
                     else:
                         self._AppendLog("Hash does not match, integrity check failed!")
+                        return False
                 
                 # Case where plaintext is being sent back and forth. 
                 else:
