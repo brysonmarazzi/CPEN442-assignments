@@ -1,6 +1,7 @@
 from aes import AESCipher
 import secrets
 import pyDH
+from hashlib import sha256
 
 # STATES
 DEFAULT = 0
@@ -167,3 +168,20 @@ class Protocol:
         else:
             plain_text = self.aesCipher.decrypt(cipher_text)
         return plain_text
+
+    # Appending a SHA-256 hash to the message
+    def appendHash(self, byte_text):
+        hashed_text = sha256(byte_text).hexdigest().encode('utf-8')
+        # print(hashed_text)
+        # hashed_text = hashed_text[:-1] + SECURE_PREPEND.to_bytes(1, "big")
+        return (byte_text + hashed_text)
+
+    # Verify that the hash of a message matches our hash
+    def verify_hashed_plaintext(self, byte_plain_text):
+        plain_text = byte_plain_text[:-64]
+        given_hash = byte_plain_text[-64:]
+
+        test_hash = sha256(plain_text).hexdigest().encode('utf-8')
+        if test_hash == given_hash:
+            return True
+        return False
