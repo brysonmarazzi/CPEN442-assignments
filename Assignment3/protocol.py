@@ -169,10 +169,12 @@ class Protocol:
             plain_text = self.aesCipher.decrypt(cipher_text)
         return plain_text
 
+    # Appending a SHA-256 hash to the message
     def appendHash(self, byte_text):
         hashed_text = sha256(byte_text).digest()
         return (byte_text + hashed_text)
 
+    # Verify that the hash of a message matches our hash
     def verify_hashed_ciphertext(self, byte_cipher_text):
         cipher_text = byte_cipher_text[:-32]
         given_hash = byte_cipher_text[-32:]
